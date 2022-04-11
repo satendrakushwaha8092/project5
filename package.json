@@ -1,0 +1,28 @@
+{
+  "name": "thorium-project-shopping-cart",
+  "version": "1.0.0",
+  "description": "kuch bhi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sonu0911/project-Shopping-cart.git"
+  },
+  "keywords": [
+    "\"rushikesh\""
+  ],
+  "author": "\"rushi\"",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sonu0911/project-Shopping-cart/issues"
+  },
+  "homepage": "https://github.com/Sonu0911/project-Shopping-cart#readme",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "express": "^4.17.3",
+    "mongoose": "^6.2.10",
+    "router": "^1.3.6"
+  }
+}
