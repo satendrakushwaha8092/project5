@@ -257,7 +257,6 @@ const loginUser = async function(req, res) {
         };
 
 
-
         bcrypt.compare(password, userEmailFind.password, function(err, result) {
             if (result) {
                 let token = jwt.sign({
@@ -265,11 +264,12 @@ const loginUser = async function(req, res) {
                     iat: Math.floor(Date.now() / 1000),
                     exp: Math.floor(Date.now() / 1000) + 10 * 60 * 60
                 }, "rushi-159");
+
                 const userData = {
                     userId: userEmailFind._id,
                     token: token
                 }
-                res.status(201).send({
+                res.status(200).send({
                     status: true,
                     message: "user login successfully",
                     data: userData
@@ -296,12 +296,12 @@ const loginUser = async function(req, res) {
 
 const getUser = async function(req, res) {
     try {
-        let userId = req.params.userId
+        let userId = req.params.userId.trim()
 
         if (!isValidObjectId(userId)) {
             return res.status(400).send({
                 status: false,
-                msg: "path param is missing/invalid"
+                msg: "path param is invalid"
             })
         }
 
@@ -331,46 +331,198 @@ const getUser = async function(req, res) {
 
 // ==========================================UPDATE USER==============================================
 
+// const userUpdate = async function(req, res) {
+//     try {
+
+//         let userId = req.params.userId
+
+
+//         if (!isValidObjectId(userId)) {
+//             return res.status(400).send({
+//                 status: false,
+//                 msg: "userId is invalid"
+//             })
+//         }
+
+
+//         let data = req.body
+
+//         const findUserData = await userModel.findById({ _id: userId })
+//         if (!findUserData) {
+//             return res.status(400).send({
+//                 status: false,
+//                 msg: "no user found"
+//             })
+//         }
+
+
+//         const salt = await bcrypt.genSalt(10);
+//         data.password = await bcrypt.hash(data.password, salt);
+
+
+//         let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, {data }, { new: true })
+//         return res.status(200).send({
+//             status: true,
+//             msg: "user updated successfully",
+//             data: updatedUser
+//         })
+
+
+//     } catch (error) {
+//         return res.status(500).send({
+//             status: false,
+//             msg: error.message
+//         })
+//     }
+// }
+
+
+
+
 const userUpdate = async function(req, res) {
-    try {
 
-        let userId = req.params.userId
+    let data = req.body;
+    const userId = req.params.userId
 
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({
-                status: false,
-                msg: "path param is missing/invalid"
-            })
+
+    const { fname, lname, email, phone, password, address } = data
+
+    const updatedData = {}
+
+
+    //=======================================fname validation=====================================
+
+
+    if (fname) {
+        if (!isValid(fname)) {
+            return res.status(400).send({ status: false, Message: "First name is required" })
         }
-
-
-        let data = req.body
-
-
-        const findUserData = await userModel.findById({ _id: userId })
-        if (!findUserData) {
-            return res.status(400).send({
-                status: false,
-                msg: "no user found"
-            })
-        }
-
-
-        let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, data, { new: true })
-        return res.status(200).send({
-            status: true,
-            msg: "user updated successfully",
-            data: updatedUser
-        })
-
-
-    } catch (error) {
-        return res.status(500).send({
-            status: false,
-            msg: error.message
-        })
+        updatedData.fname = fname
     }
+
+
+    //===================================lname validation==========================================
+
+
+    if (lname) {
+        if (!isValid(lname)) {
+            return res.status(400).send({ status: false, Message: "Last name is required" })
+        }
+        updatedData.lname = lname
+    }
+
+    //================================email validation==============================================
+
+
+    if (email) {
+
+        if (!(/^\w+([\.-]?\w+)@\w+([\. -]?\w+)(\.\w{2,3})+$/.test(email.trim()))) return res.status(400).send({ status: false, msg: "Please provide a valid email" });
+
+        const isEmailUsed = await userModel.findOne({ email: email })
+        if (isEmailUsed) {
+            return res.status(400).send({ status: false, msg: "email must be unique" })
+        }
+        updatedData.email = email
+    }
+
+
+    //=======================profile pic upload and validation==========================
+
+    let saltRounds = 10
+    const files = req.files
+
+
+    if (files && files.length > 0) {
+
+        const profilePic = await aws.uploadFile(files[0])
+
+        updatedData.profileImage = profilePic
+
+    }
+
+
+
+    //===============================phone validation-========================================
+
+    if (phone) {
+
+        if (!(/^([+]\d{2})?\d{10}$/.test(phone))) return res.status(400).send({ status: false, msg: "please provide a valid phone number" })
+
+        const isPhoneUsed = await userModel.findOne({ phone: phone })
+        if (isPhoneUsed) {
+            return res.status(400).send({ status: false, msg: "phone number must be unique" })
+        }
+        updatedData.phone = phone
+    }
+
+    //======================================password validation-====================================
+
+
+    if (password) {
+        if (!isValid(password)) { return res.status(400).send({ status: false, message: "password is required" }) }
+        //if (!(/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,15}$/.test(data.password.trim()))) { return res.status(400).send({ status: false, msg: "please provide a valid password with one uppercase letter ,one lowercase, one character and one number " }) }
+
+        const encryptPassword = await bcrypt.hash(password, saltRounds)
+
+        updatedData.password = encryptPassword
+    }
+
+
+    //========================================address validation=================================
+
+    if (address) {
+
+        if (address.shipping) {
+
+            if (!isValid(address.shipping.street)) {
+                return res.status(400).send({ status: false, Message: "street name is required" })
+            }
+            updatedData["address.shipping.street"] = address.shipping.street
+
+
+            if (!isValid(address.shipping.city)) {
+                return res.status(400).send({ status: false, Message: "city name is required" })
+            }
+
+            updatedData["address.shipping.city"] = address.shipping.city
+
+            if (!isValid(address.shipping.pincode)) {
+                return res.status(400).send({ status: false, Message: "pincode is required" })
+            }
+
+            updatedData["address.shipping.pincode"] = address.shipping.pincode
+
+        }
+
+        if (address.billing) {
+            if (!isValid(address.billing.street)) {
+                return res.status(400).send({ status: false, Message: "Please provide street name in billing address" })
+            }
+            updatedData["address.billing.street"] = address.billing.street
+
+            if (!isValid(address.billing.city)) {
+                return res.status(400).send({ status: false, Message: "Please provide city name in billing address" })
+            }
+            updatedData["address.billing.city"] = address.billing.city
+
+            if (!isValid(address.billing.pincode)) {
+                return res.status(400).send({ status: false, Message: "Please provide pincode in billing address" })
+            }
+            updatedData["address.billing.pincode"] = address.billing.pincode
+        }
+    }
+
+    //=========================================update data=============================
+
+    const updatedUser = await userModel.findOneAndUpdate({ _id: userId }, updatedData, { new: true })
+
+    return res.status(200).send({ status: true, message: "User profile updated", data: updatedUser });
+
 }
+
+
+//==============================================================================================
+
 
 module.exports.createUser = createUser
 module.exports.loginUser = loginUser,

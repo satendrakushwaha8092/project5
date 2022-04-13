@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const userSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema({
 
     title: {
         type: String,
@@ -21,14 +21,14 @@ const userSchema = new mongoose.Schema({
     currencyId: {
         type: String,
         required: true,
-        INR,
-        trim: true
+        trim: true.valueOf,
+        default: "INR"
     },
     currencyFormat: {
         type: String,
         required: true,
-        Rupee symbol,
-        trim: true
+        trim: true,
+        default: '₹'
     },
     isFreeShipping: {
         type: Boolean,
@@ -37,7 +37,6 @@ const userSchema = new mongoose.Schema({
     productImage: {
         type: String,
         required: true,
-        ,
         trim: true
     },
     style: {
@@ -45,12 +44,13 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
     availableSizes: {
-        array of string,
-        at least one size,
-        enum: ["S", "XS", "M", "X", "L", "XXL", "XL"]
+        type: [String],
+        enum: ["S", "XS", "M", "X", "L", "XXL", "XL"],
+        trim: true
     },
     installments: {
-        type: Number
+        type: Number,
+        trim: true
     },
     deletedAt: {
         type: Date
@@ -62,4 +62,4 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model('users', userSchema)
+module.exports = mongoose.model('product', productSchema)

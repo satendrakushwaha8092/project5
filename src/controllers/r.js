@@ -240,3 +240,70 @@
 // module.exports.writeFile = writeFile;
 // module.exports.getUser = getUser;
 // module.exports.updateUser = updateUser;
+
+
+
+
+// const updateProduct = async function(req, res) {
+//     try {
+
+//         let data = req.body;
+//         let productId = req.params.productId;
+
+//         const { title, description, price, currencyId, currencyFormat, productImage } = data
+
+//         if (!isValid(data.length == 0)) {
+//             res.status(400).send({
+//                 status: false,
+//                 msg: "Input via body is required"
+//             })
+//             return
+//         }
+
+
+//         if (!isValid(productId.length == 0)) {
+//             res.status(400).send({
+//                 status: false,
+//                 msg: "productId is required"
+//             })
+//             return
+//         }
+
+
+//         if (!isValidObjectId(productId)) {
+//             res.status(400).send({
+//                 status: false,
+//                 msg: "Invalid ProductId"
+//             })
+//             return
+//         }
+
+
+//         let productUpdatedData = await productModel.findById({ _id: productId, isDeleted: false })
+
+//         if (!isValid(productUpdatedData)) {
+//             res.status(404).send({
+//                 status: false,
+//                 msg: "No user data found with this Id"
+//             })
+//             return
+
+//         } else {
+//             await productModel.findByIdAndUpdate({ _id: productId, isDeleted: false }, data, { new: true })
+//             let updateDetails = await productModel.find({ _id: productId })
+//             res.status(200).send({
+//                 status: true,
+//                 msg: "Data updated Successfully",
+//                 data: updateDetails
+//             })
+//             return
+//         }
+
+
+
+
+//     } catch (error) {
+//         res.status(500).send({ status: false, msg: error.message });
+//     }
+
+// }
