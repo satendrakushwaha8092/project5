@@ -101,13 +101,9 @@ const createProduct = async function(req, res) {
             return res.status(400).send({ status: false, msg: "productImage is required" })
         }
 
-        // let availableSizes = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-
-        // if (!availableSizes)
-        //     return res.status(400).send({
-        //         status: false,
-        //         msg: "availableSizes should be from [S, XS, M, X, L, XXL, XL]"
-        //     })
+        if(!(["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(data.availableSizes) !== -1)){
+            return res.status(400).send({ status: false, message: "size should be S, XS, M, X, L, XXL, XL" })
+        }
 
         let createdProduct = await productModel.create(data)
         return res.status(201).send({
@@ -313,11 +309,10 @@ const updateTheProduct = async function(req, res) {
         }
 
         if (availableSizes) {
-            let availableSize = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            if (!availableSize.includes(availableSizes)) return res.status(400).send({
-                status: false,
-                msg: "availableSizes should be from [S, XS, M, X, L, XXL, XL]"
-            })
+            if(!(["S", "XS", "M", "X", "L", "XXL", "XL"].indexOf(availableSizes) !== -1)){
+                return res.status(400).send({ status: false, message: "size should be S, XS, M, X, L, XXL, XL" })
+            }
+            
         }
 
 
